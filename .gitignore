@@ -1,0 +1,6 @@
+*.pyc
+zabbixctl.egg-info
+build
+dist
+rpm-build
+rpms
