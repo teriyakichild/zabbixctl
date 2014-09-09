@@ -1,12 +1,12 @@
-= zabbixctl
+# zabbixctl
 
-== Install
+## Install
 
 sudo make install
 or
 sudo python setup.py install
 
-== Usage
+## Usage
 
 zabbixctl -H zabbix.yourdomain.com get trigger -a 'hostids=[10167]' -a 'expandExpression=true' -a 'expandDescription=true'
 zabbixctl -H zabbix.yourdomain.com get trigger -a 'search={"host":"syslog"}' -a 'expandExpression=true' -a 'searchWildcardsEnabled=true' -a 'selecthosts=extend'
