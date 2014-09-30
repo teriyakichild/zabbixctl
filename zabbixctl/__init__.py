@@ -38,16 +38,19 @@ def main():
     if any(method_type in s for s in ['alert']):
         final = sorted(final, key=lambda k: k['clock']) 
 
-    list_of_checks = [ 'clock','lastchange' ]
-    matched_check = None
-    for check in list_of_checks:
-        if final[0].get(check, None):
-            matched_check = check
+    if method != 'create':
+        # Check if one of the following keys exist
+        list_of_checks = [ 'clock','lastchange' ]
+        matched_check = None
+        for check in list_of_checks:
+            if final[0].get(check, None):
+                matched_check = check
+    else:
+        matched_check = None
 
+    # If a key exists, then sort on that key and update the unix_timestamp to readable format
     if matched_check:
-        # If there is a clock, then sort based on that field
         final = sorted(final, key=lambda k: k[matched_check])
-        # Now we are going to convert the uniz timestamp to a readable format
         for item in final:
             item[matched_check] = str(datetime.fromtimestamp(float(item[matched_check])))
         

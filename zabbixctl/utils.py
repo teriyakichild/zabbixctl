@@ -40,7 +40,7 @@ def build_parsers():
 
     subparsers = parser.add_subparsers(dest="subparser_name",)
 
-    get_parser = subparsers.add_parser('get', help='Zabbix API RPC mode')
+    get_parser = subparsers.add_parser('get', help='Zabbix API Method for get')
     get_parser.add_argument('type',
                                help='Zabbix API get method (host.get,'
                                'hostgroups.get,usergroups.get)')
@@ -49,11 +49,19 @@ def build_parsers():
                                default=['output=extend', ],
                                help="RPC params", action='append')
 
-    update_parser = subparsers.add_parser('update', help='Zabbix API RPC mode')
+    update_parser = subparsers.add_parser('update', help='Zabbix API Method for update')
     update_parser.add_argument('type',
-                               help='Zabbix API get method (host.get,'
-                               'hostgroups.get,usergroups.get)')
+                               help='Zabbix API update method (host.update,'
+                               'hostgroups.update,usergroups.update)')
     update_parser.add_argument("-a", '--arguments',
+                               dest='arguments',
+                               help="RPC params", action='append')
+
+    create_parser = subparsers.add_parser('create', help='Zabbix API Method for create')
+    create_parser.add_argument('type',
+                               help='Zabbix API get method (host.create,'
+                               'hostgroups.create,usergroups.create)')
+    create_parser.add_argument("-a", '--arguments',
                                dest='arguments',
                                help="RPC params", action='append')
 
