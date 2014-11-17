@@ -30,7 +30,13 @@ def main():
         method_type = getattr(args, 'type')
         method = getattr(args, 'subparser_name')
         func =  getattr(getattr(getattr(Z[host], 'zapi'), method_type), method)
-        rets[host] = func(**Z[host].parse_args(args.arguments))
+        args_real = Z[host].parse_args(args.arguments)
+        if type(args_real) == str or type(args_real) == int:
+            rets[host] = func(str(args_real))
+        elif type(args_real) == list:
+            rets[host] = func(*args_real)
+        else:
+            rets[host] = func(**args_real)
     final = []
     for ret in rets:
         final += rets[ret]
@@ -38,13 +44,16 @@ def main():
     if any(method_type in s for s in ['alert']):
         final = sorted(final, key=lambda k: k['clock']) 
 
-    if method != 'create':
+    if method not in ['create', 'delete', 'update']:
         # Check if one of the following keys exist
         list_of_checks = [ 'clock','lastchange' ]
         matched_check = None
         for check in list_of_checks:
-            if final[0].get(check, None):
-                matched_check = check
+            try:
+                if final[0].get(check, None):
+                    matched_check = check
+            except IndexError:
+                pass
     else:
         matched_check = None
 
