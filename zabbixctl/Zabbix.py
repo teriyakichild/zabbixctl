@@ -50,14 +50,14 @@ class Zabbix(object):
         arguments = {}
         for argument in args:
             if '=' in argument:
-                tmp = [a for a in argument.split('=')]
+                tmp = [a for a in argument.split('=',1)]
                 try:
                     value = eval(tmp[1])
                 except (NameError, SyntaxError):
                     value = tmp[1]
                 arguments[tmp[0]] = value
-            elif 'delete' in method_arr[1]:
-                arguments = argument
+            else:
+                arguments = eval(argument)
         return arguments
 
 
