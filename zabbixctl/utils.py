@@ -65,6 +65,15 @@ def build_parsers():
                                dest='arguments',
                                help="RPC params", action='append')
 
+    delete_parser = subparsers.add_parser('delete', help='Zabbix API Method for delete')
+    delete_parser.add_argument('type',
+                               help='Zabbix API get method (host.delete,'
+                               'hostgroups.delete,usergroups.delete)')
+    delete_parser.add_argument("-a", '--arguments',
+                               dest='arguments',
+                               help="RPC params", action='append')
+
+
 
     return parser
 
