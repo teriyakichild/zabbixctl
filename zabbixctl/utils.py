@@ -73,7 +73,9 @@ def build_parsers():
                                dest='arguments',
                                help="RPC params", action='append')
 
-
+    help_parser = subparsers.add_parser('help', help='Display link for Zabbix wiki')
+    help_parser.add_argument('type',
+                               help='Displays link for Zabbix Wiki')
 
     return parser
 
