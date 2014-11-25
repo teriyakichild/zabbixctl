@@ -3,7 +3,7 @@
 %define module_name zabbixctl
 
 Name:           %{module_name}
-Version:        0.1.0
+Version:        0.1.1
 Release:        1
 Summary:        zabbixctl - Utility that connects to Zabbix API
 
@@ -34,5 +34,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,-,-) %{_bindir}/zabbixctl
 
 %changelog
+* Tue Nov 25 2014 Tony Rogers <tony.rogers@rackspace.com> - 0.1.1
 * Mon Sep 8 2014 Tony Rogers <tony.rogers@rackspace.com> - 0.1.0
 - Initial spec
