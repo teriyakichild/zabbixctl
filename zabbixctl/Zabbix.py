@@ -9,9 +9,11 @@ c = Cache('/tmp/zabbix.cache')
 class Zabbix(object):
     status = True
     error = None
-    def __init__(self, host):
+    def __init__(self, host, verify='true'):
         self.zapi = ZabbixAPI('https://{0}/zabbix'.format(host))
-        self.zapi.session.verify = False
+        if verify.lower() in ['true','false']:
+            verify = eval(verify.title())
+        self.zapi.session.verify = verify
         self.host = host
         token = c.get(host)
         if token:
@@ -48,16 +50,17 @@ class Zabbix(object):
 
     def parse_args(self, args):
         arguments = {}
-        for argument in args:
-            if '=' in argument:
-                tmp = [a for a in argument.split('=',1)]
-                try:
-                    value = eval(tmp[1])
-                except (NameError, SyntaxError):
-                    value = tmp[1]
-                arguments[tmp[0]] = value
-            else:
-                arguments = eval(argument)
+        if args is not None:
+            for argument in args:
+                if '=' in argument:
+                    tmp = [a for a in argument.split('=',1)]
+                    try:
+                        value = eval(tmp[1])
+                    except (NameError, SyntaxError):
+                        value = tmp[1]
+                    arguments[tmp[0]] = value
+                else:
+                    arguments = eval(argument)
         return arguments
 
 

@@ -30,13 +30,18 @@ def build_parsers():
 
     parser.add_argument("--debug", help="increase output verbosity",
                         action="store_true")
+
+    parser.add_argument("-V", "--verify",
+                        default='true',
+                        help="Verify SSL (True, False, or Path to CACert)")
+
     parser.add_argument("-H", "--hosts",
                         dest='hosts',
                         help="Zabbix API host"
                         "example: zabbixhost.example.com", action='append')
     parser.add_argument("-U", "--user",
                         default=getpass.getuser(),
-                        help="Zabbix API user; overrides environment.password")
+                        help="Zabbix API user")
 
     subparsers = parser.add_subparsers(dest="subparser_name",)
 
@@ -47,6 +52,14 @@ def build_parsers():
     get_parser.add_argument("-a", '--arguments',
                                dest='arguments',
                                default=['output=extend', ],
+                               help="RPC params", action='append')
+
+    export_parser = subparsers.add_parser('export', help='Zabbix API Method for export')
+    export_parser.add_argument('type',
+                               help='Zabbix API export method (host.export,'
+                               'hostgroups.export,usergroups.export)')
+    export_parser.add_argument("-a", '--arguments',
+                               dest='arguments',
                                help="RPC params", action='append')
 
     update_parser = subparsers.add_parser('update', help='Zabbix API Method for update')

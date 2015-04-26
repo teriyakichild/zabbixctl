@@ -6,15 +6,16 @@ from utils import Cache, build_parsers
 from Zabbix import Zabbix
 from datetime import datetime
 
-def main():
+def main(args=None):
     parser = build_parsers()
 
-    try:
-        args = parser.parse_args(sys.argv[1:])
+    if args is None:
+        try:
+            args = parser.parse_args(sys.argv[1:])
 
-    except IOError as e:
-        print("Could not open file %s: %s" % (e.filename, e.strerror))
-        exit(1)
+        except IOError as e:
+            print("Could not open file %s: %s" % (e.filename, e.strerror))
+            exit(1)
 
     if args.debug:
         print("Debug enabled")
@@ -26,7 +27,7 @@ def main():
         Z = {}
         rets = {}
         for host in args.hosts:
-            Z[host] = Zabbix(host)
+            Z[host] = Zabbix(host, args.verify)
             if Z[host].status:
                 pass
             else:
@@ -46,7 +47,8 @@ def main():
         if any(method_type in s for s in ['alert']):
             final = sorted(final, key=lambda k: k['clock']) 
 
-        if method not in ['create', 'delete', 'update']:
+        # If there is a timestamp we want to do stuff to it
+        if method not in ['create', 'delete', 'update', 'export']:
             # Check if one of the following keys exist
             list_of_checks = [ 'clock','lastchange' ]
             matched_check = None
@@ -65,7 +67,7 @@ def main():
             for item in final:
                 item[matched_check] = str(datetime.fromtimestamp(float(item[matched_check])))
             
-        print json.dumps(final, indent=2)
+        return json.dumps(final, indent=2)
     else:
         print 'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(method_type)
 
