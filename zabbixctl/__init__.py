@@ -42,7 +42,12 @@ def main(args=None):
                 rets[host] = func(**args_real)
         final = []
         for ret in rets:
-            final += rets[ret]
+            # if the results are not a list, the final output should be final
+            # this was added to support the configuration.export method of the API
+            if type(rets[ret]) == list:
+                final += rets[ret]
+            else:
+                final = eval(rets[ret])
 
         if any(method_type in s for s in ['alert']):
             final = sorted(final, key=lambda k: k['clock']) 
@@ -66,7 +71,6 @@ def main(args=None):
             final = sorted(final, key=lambda k: k[matched_check])
             for item in final:
                 item[matched_check] = str(datetime.fromtimestamp(float(item[matched_check])))
-            
         return json.dumps(final, indent=2)
     else:
         print 'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(method_type)
