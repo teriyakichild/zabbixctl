@@ -20,4 +20,9 @@ zabbixctl -H zabbix.yourdomain.com get itemprototype
 zabbixctl -H zabbix.yourdomain.com get event -a 'time_from=1409611855' -a 'output=extend' -a 'selectRelatedObject=["description"]'
 zabbixctl -H zabbix.yourdomain.com get alert -a 'time_from=1409611855' -a 'output=extend' -a 'selectHosts=["host"]'
 zabbixctl -H zabbix.yourdomain.com get template -a 'output=["host"]' -a 'selectItems=extend' -a 'templateids=[10167]'
+```
 
+## Known Issues
+
+Error: ImportError: cannot import name to_native_string  
+Solution: Upgrade to at least version 2.0 of requests

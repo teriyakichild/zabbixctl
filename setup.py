@@ -18,7 +18,7 @@ if __name__ == "__main__":
         package_dir = {NAME: NAME},
         description = "zabbixctl - Utility that connects to Zabbix API",
 
-        install_requires = ['requests',
+        install_requires = ['requests>=2.0.0',
                             'argparse',
                             'pyzabbix',
                             'ConfigParser'],
