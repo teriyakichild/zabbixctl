@@ -46,6 +46,8 @@ def main(args=None):
             # this was added to support the configuration.export method of the API
             if type(rets[ret]) == list:
                 final += rets[ret]
+            elif type(rets[ret]) == dict:
+                final = rets[ret]
             else:
                 final = eval(rets[ret])
 
