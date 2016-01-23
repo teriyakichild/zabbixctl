@@ -1,10 +1,15 @@
 # zabbixctl
 
 ## Install
-
-sudo make install
-or
+```bash
+sudo pip install zabbixctl 
+#or 
+sudo make install 
+#or 
 sudo python setup.py install
+```
+
+## Usage
 ```
 usage: zabbixctl [-h] [-d] [-i] [-V] [-c CACERT] [-t TIMEOUT] [-H HOSTS]
                  [-U USER]
@@ -34,7 +39,7 @@ optional arguments:
   -H HOSTS, --hosts HOSTS
                         Zabbix API host(s).example: zabbixhost.example.com
                         (default: None)
-  -U USER, --user USER  Zabbix API user (default: anthony)
+  -U USER, --user USER  Zabbix API user (default: system username)
 
 usage: zabbixctl get [-h] [-a ARGUMENTS] type
 
