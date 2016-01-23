@@ -5,9 +5,51 @@
 sudo make install
 or
 sudo python setup.py install
-
-## Usage
 ```
+usage: zabbixctl [-h] [-d] [-i] [-V] [-c CACERT] [-t TIMEOUT] [-H HOSTS]
+                 [-U USER]
+                 {help,get,create,update,export,delete} ...
+
+Zabbix CLI
+
+positional arguments:
+  {help,get,create,update,export,delete}
+    get                 Zabbix API Method for get
+    export              Zabbix API Method for export
+    update              Zabbix API Method for update
+    create              Zabbix API Method for create
+    delete              Zabbix API Method for delete
+    help                Display link for Zabbix wiki
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d, --debug           increase output verbosity (default: False)
+  -i, --http            Use http instead of https (default: False)
+  -V, --noverify        Do not verify the SSL (default: False)
+  -c CACERT, --cacert CACERT
+                        Path to the SSL CA Certificateexample:
+                        /etc/pki/tls/certs/ca-bundle.crt (default: None)
+  -t TIMEOUT, --timeout TIMEOUT
+                        Zabbix API read timeout in seconds (default: 30)
+  -H HOSTS, --hosts HOSTS
+                        Zabbix API host(s).example: zabbixhost.example.com
+                        (default: None)
+  -U USER, --user USER  Zabbix API user (default: anthony)
+
+usage: zabbixctl get [-h] [-a ARGUMENTS] type
+
+positional arguments:
+  type                  Zabbix API get method
+                        (host.get,hostgroups.get,usergroups.get)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -a ARGUMENTS, --arguments ARGUMENTS
+                        RPC params
+```
+
+## Examples
+```bash
 zabbixctl -H zabbix.yourdomain.com get trigger -a 'hostids=[10167]' -a 'expandExpression=true' -a 'expandDescription=true'
 zabbixctl -H zabbix.yourdomain.com get trigger -a 'search={"host":"syslog"}' -a 'expandExpression=true' -a 'searchWildcardsEnabled=true' -a 'selecthosts=extend'
 zabbixctl -H zabbix.yourdomain.com get trigger -a 'triggerids=[14924]'

@@ -2,31 +2,61 @@ from pyzabbix import ZabbixAPI, ZabbixAPIException
 import json
 import getpass
 import sys
+import logging
 from utils import Cache
+from requests.exceptions import HTTPError, ConnectionError
+#import urllib3
 
 c = Cache('/tmp/zabbix.cache')
 
 class Zabbix(object):
     status = True
     error = None
-    def __init__(self, host, verify='true'):
-        self.zapi = ZabbixAPI('https://{0}/zabbix'.format(host))
-        if verify.lower() in ['true','false']:
-            verify = eval(verify.title())
-        self.zapi.session.verify = verify
+    def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
+        self.logger = logging.getLogger('zabbixctl')
+        self.zabbix_url = host
+        protocol = 'http' if http else 'https'
+
+        self.zabbix_url = '{0}://{1}/zabbix'.format(protocol, host)
+
+        self.logger.debug(self.zabbix_url)
+
+        self.zapi = ZabbixAPI(self.zabbix_url)
+
+        if cacert is not None:
+            self.logger.debug('Setting zapi.session.verify to {0}'.format(cacert))
+            self.zapi.session.verify = cacert
+
+        if noverify:
+            self.logger.debug('Setting zapi.session.verify to False')
+            self.zapi.session.verify = False
+
+        self.zapi.timeout = timeout
+        self.fetch_zabbix_api_version()
+
         self.host = host
         token = c.get(host)
         if token:
+            self.logger.debug('Found token for {0}'.format(host))
             self.zapi.auth = token
-            try:
-                test = self.zapi.apiinfo.version()
-            except ZabbixAPIException as e:
-                if 'Not authorized' in str(e):
-                    self.status = False
-                else:
-                    print e
+            # Let's test the token by grabbing the api version
+            self.fetch_zabbix_api_version()
         else:
             self.status = False
+
+    def fetch_zabbix_api_version(self):
+        try:
+            return self.zapi.apiinfo.version()
+        except ZabbixAPIException as e:
+            self.status = False
+            if 'Not authorized' in str(e):
+                self.logger.debug('Token not authorized for {0}'.format(host))
+                self.error = e
+            else:
+                self.error = e
+        except (HTTPError, ConnectionError) as e:
+            self.error = e
+        return False
 
     def status(self):
         return self.status
@@ -38,14 +68,9 @@ class Zabbix(object):
             self.status = True
             c.write(self.host, self.zapi.auth)
         except ZabbixAPIException as e:
-           if e.__class__.__name__ == 'HTTPError' and e.response.status_code == 404:
-                self.error = 'Invalid URL'
-                self.status = False
-                return False
-           else:
-                self.error = e
-                self.status = False
-                return False
+            self.error = e
+            self.status = False
+            return False
         return True
 
     def parse_args(self, args):
@@ -62,47 +87,6 @@ class Zabbix(object):
                 else:
                     arguments = eval(argument)
         return arguments
-
-
-
-
-#def authenticate(zapi):
-#    # Prompt for username and password
-#    username = raw_input('Username[{0}]:'.format(getpass.getuser())) or getpass.getuser()
-#    password = getpass.getpass()
-#
-#    # Login to the Zabbix API
-#    try:
-#        zapi.login(username, password)
-#    except Exception as e:
-#        if e.__class__.__name__ == 'HTTPError' and e.response.status_code == 404:
-#            print 'Invalid URL'
-#            exit(1)
-#        else:
-#            print e
-#            exit(1)
-#    return zapi.auth
-
-#def main():
-#
-#    zapi = ZabbixAPI('https://zabbix.dev.ord1.us.ci.rackspace.net/zabbix')
-#    zapi.session.verify = False
-#
-#    c = Cache('/tmp/zabbix.cache')
-#    token = c.get(sys.argv[1])
-#    if token:
-#        zapi.auth = token
-#        try:
-#            test = zapi.apiinfo.version()
-#        except ZabbixAPIException as e:
-#            if 'Not authorized' in str(e):
-#                token = authenticate(zapi)
-#                c.write(sys.argv[1],token)
-#            else:
-#                print e
-#    else:
-#        token = authenticate(zapi)
-#        c.write(sys.argv[1], token)
 
 if __name__ == '__main__':
     Z = Zabbix('zabbix.dev.ord1.us.ci.rackspace.net')

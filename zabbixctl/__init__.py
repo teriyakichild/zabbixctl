@@ -2,23 +2,25 @@
 import json
 import getpass
 import sys
-from utils import Cache, build_parsers
+from utils import Cache, build_parsers, getlogger
+import logging
 from Zabbix import Zabbix
 from datetime import datetime
 
 def main(args=None):
+    logger = getlogger()
     parser = build_parsers()
 
     if args is None:
         try:
             args = parser.parse_args(sys.argv[1:])
-
         except IOError as e:
-            print("Could not open file %s: %s" % (e.filename, e.strerror))
+            logger.error("Could not open file %s: %s" % (e.filename, e.strerror))
             exit(1)
 
     if args.debug:
-        print("Debug enabled")
+        logger.setLevel(logging.DEBUG)
+        logger.debug("Debug enabled")
 
     method_type = getattr(args, 'type')
     method = getattr(args, 'subparser_name')
@@ -27,11 +29,16 @@ def main(args=None):
         Z = {}
         rets = {}
         for host in args.hosts:
-            Z[host] = Zabbix(host, args.verify)
-            if Z[host].status:
-                pass
-            else:
-                Z[host].auth(args.user, getpass.getpass())
+            Z[host] = Zabbix(host, args.noverify, args.cacert, args.http, args.timeout)
+            if not Z[host].status:
+                if 'Not authorized' in Z[host].error:
+                    Z[host].auth(args.user, getpass.getpass())
+                else:
+                    exit('Error connecting to Zabbix API: {0}'.format(
+                            Z[host].error
+                        )
+                    )
+
             func =  getattr(getattr(getattr(Z[host], 'zapi'), method_type), method)
             args_real = Z[host].parse_args(args.arguments)
             if type(args_real) == str or type(args_real) == int:
@@ -75,7 +82,7 @@ def main(args=None):
                 item[matched_check] = str(datetime.fromtimestamp(float(item[matched_check])))
         sys.stdout.write(json.dumps(final, indent=2))
     else:
-        print 'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(method_type)
+        logger.info('https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(method_type))
 
 if __name__ == '__main__':
     main()
