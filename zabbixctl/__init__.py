@@ -37,12 +37,14 @@ def main(args=None):
             Z[host] = Zabbix(host, args.noverify, args.cacert,
                              args.http, args.timeout)
             if not Z[host].status:
-                if 'Not authorized' in Z[host].error:
+                if Z[host].error is None:
+                    Z[host].auth(args.user, getpass.getpass())
+                elif 'Not authorized' in Z[host].error:
                     Z[host].auth(args.user, getpass.getpass())
                 else:
                     exit('Error connecting to Zabbix API: {0}'.format(
-                        Z[host].error
-                    )
+                            Z[host].error
+                        )
                     )
 
             func = getattr(
