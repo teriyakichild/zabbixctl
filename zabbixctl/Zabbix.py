@@ -9,9 +9,11 @@ from requests.exceptions import HTTPError, ConnectionError
 
 c = Cache('/tmp/zabbix.cache')
 
+
 class Zabbix(object):
     status = True
     error = None
+
     def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
         self.logger = logging.getLogger('zabbixctl')
         self.zabbix_url = host
@@ -24,7 +26,8 @@ class Zabbix(object):
         self.zapi = ZabbixAPI(self.zabbix_url)
 
         if cacert is not None:
-            self.logger.debug('Setting zapi.session.verify to {0}'.format(cacert))
+            self.logger.debug(
+                'Setting zapi.session.verify to {0}'.format(cacert))
             self.zapi.session.verify = cacert
 
         if noverify:
@@ -60,7 +63,7 @@ class Zabbix(object):
 
     def status(self):
         return self.status
-    
+
     def auth(self, username, password):
         try:
             self.zapi.login(username, password)
@@ -78,7 +81,7 @@ class Zabbix(object):
         if args is not None:
             for argument in args:
                 if '=' in argument:
-                    tmp = [a for a in argument.split('=',1)]
+                    tmp = [a for a in argument.split('=', 1)]
                     try:
                         value = eval(tmp[1])
                     except (NameError, SyntaxError):
@@ -89,8 +92,9 @@ class Zabbix(object):
         return arguments
 
 if __name__ == '__main__':
-    Z = Zabbix('zabbix.dev.ord1.us.ci.rackspace.net')
+    Z = Zabbix('zabbix.yourdomain.net')
     username = getpass.getuser()
     password = getpass.getpass()
     Z.auth(username, password)
-    import pdb;pdb.set_trace()
+    import pdb
+    pdb.set_trace()
