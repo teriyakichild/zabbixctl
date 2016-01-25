@@ -6,13 +6,11 @@ from requests.exceptions import HTTPError, ConnectionError
 
 c = Cache('/tmp/zabbix.cache')
 
+log = logging.getLogger(__name__)
 
 class Zabbix(object):
-    """
-
-    """
-    status = True
-    error = None
+    STATUS = True
+    ERROR = None
 
     def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
         """
@@ -22,25 +20,22 @@ class Zabbix(object):
         :param cacert:
         :param http:
         :param timeout:
-        :return:
+        :return: Zabbix instance
         """
-        self.logger = logging.getLogger('zabbixctl')
-        self.zabbix_url = host
-        protocol = 'http' if http else 'https'
 
-        self.zabbix_url = '{0}://{1}/zabbix'.format(protocol, host)
+        protocol = 'http' if http is True else 'https'
+        zabbix_url = '{0}://{1}/zabbix'.format(protocol, host)
+        log.debug("Creating instance of Zabbic with url: %s", zabbix_url)
 
-        self.logger.debug(self.zabbix_url)
-
-        self.zapi = ZabbixAPI(self.zabbix_url)
+        self.zapi = ZabbixAPI(zabbix_url)
 
         if cacert is not None:
-            self.logger.debug(
-                'Setting zapi.session.verify to {0}'.format(cacert))
+            log.debug('Setting zapi.session.verify to {0}'
+                      ''.format(cacert))
             self.zapi.session.verify = cacert
 
         if noverify:
-            self.logger.debug('Setting zapi.session.verify to False')
+            log.debug('Setting zapi.session.verify to False')
             self.zapi.session.verify = False
 
         self.zapi.timeout = timeout
@@ -69,9 +64,6 @@ class Zabbix(object):
         except (HTTPError, ConnectionError) as e:
             self.error = e
         return False
-
-    def status(self):
-        return self.status
 
     def auth(self, username, password):
         try:
