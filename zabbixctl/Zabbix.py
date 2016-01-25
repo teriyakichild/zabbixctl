@@ -1,20 +1,29 @@
 from pyzabbix import ZabbixAPI, ZabbixAPIException
-import json
 import getpass
-import sys
 import logging
 from utils import Cache
 from requests.exceptions import HTTPError, ConnectionError
-#import urllib3
 
 c = Cache('/tmp/zabbix.cache')
 
 
 class Zabbix(object):
+    """
+
+    """
     status = True
     error = None
 
     def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
+        """
+
+        :param host:
+        :param noverify:
+        :param cacert:
+        :param http:
+        :param timeout:
+        :return:
+        """
         self.logger = logging.getLogger('zabbixctl')
         self.zabbix_url = host
         protocol = 'http' if http else 'https'
@@ -92,9 +101,9 @@ class Zabbix(object):
         return arguments
 
 if __name__ == '__main__':
-    Z = Zabbix('zabbix.yourdomain.net')
+    Z_obj = Zabbix('zabbix.yourdomain.net')
     username = getpass.getuser()
     password = getpass.getpass()
-    Z.auth(username, password)
+    Z_obj.auth(username, password)
     import pdb
     pdb.set_trace()

@@ -1,6 +1,6 @@
 import getpass
 import argparse
-import pickle
+import json
 import logging
 import sys
 
@@ -12,7 +12,7 @@ class Cache:
 
     def get(self, host):
         try:
-            token_data = pickle.load(open(self.cachefile, 'rb'))
+            token_data = json.load(open(self.cachefile, 'rb'))
             token = token_data.get(host, None)
         except IOError:
             token = None
@@ -20,11 +20,11 @@ class Cache:
 
     def write(self, host, token):
         try:
-            token_data = pickle.load(open(self.cachefile, 'rb'))
+            token_data = json.load(open(self.cachefile, 'rb'))
         except IOError:
             token_data = {}
         token_data[host] = token
-        pickle.dump(token_data, open(self.cachefile, 'wb'))
+        json.dump(token_data, open(self.cachefile, 'wb'))
 
 
 def getlogger():
