@@ -35,13 +35,12 @@ def getlogger():
     return log
 
 
-def build_parsers():
+def build_parsers(version):
     """Build parsers for cli"""
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='Zabbix CLI')
-    parser.add_argument('-v', '--version',
-                        dest='show_version',
-                        help='Display version information', action='store_true')
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s {0}'.format(version))
     parser.add_argument('-d', '--debug',
                         dest='debug',
                         help='increase output verbosity', action='store_true')
