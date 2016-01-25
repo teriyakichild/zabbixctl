@@ -1,6 +1,8 @@
 from setuptools import setup
 from sys import path
 
+from zabbixctl import __version__
+
 path.insert(0, '.')
 
 NAME = "zabbixctl"
@@ -9,7 +11,7 @@ if __name__ == "__main__":
 
     setup(
         name = NAME,
-        version = "1.0.0",
+        version = __version__,
         author = "Tony Rogers",
         author_email = "tony.rogers@rackspace.com",
         url = "https://github.com/teriyakichild/zabbixctl",

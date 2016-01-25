@@ -39,7 +39,9 @@ def build_parsers():
     """Build parsers for cli"""
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='Zabbix CLI')
-
+    parser.add_argument('-v', '--version',
+                        dest='show_version',
+                        help='Display version information', action='store_true')
     parser.add_argument('-d', '--debug',
                         dest='debug',
                         help='increase output verbosity', action='store_true')

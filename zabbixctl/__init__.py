@@ -22,6 +22,8 @@ def main(args=None):
             logger.error("Could not open file %s: %s" %
                          (e.filename, e.strerror))
             exit(1)
+    if args.show_version:
+        exit(logger.info('{0} v{1}'.format(__name__, __version__)))
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
