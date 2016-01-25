@@ -1,6 +1,6 @@
 """zabbixctl - CLI for Zabbix API"""
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 import json
 import getpass
