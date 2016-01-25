@@ -9,23 +9,23 @@ NAME = "zabbixctl"
 
 if __name__ == "__main__":
 
-    setup(
-        name = NAME,
-        version = __version__,
-        author = "Tony Rogers",
-        author_email = "tony.rogers@rackspace.com",
-        url = "https://github.com/teriyakichild/zabbixctl",
-        license = 'ASLv2',
-        packages = [NAME],
-        package_dir = {NAME: NAME},
-        description = "zabbixctl - Utility that connects to Zabbix API",
+    with open('requirements.txt') as f:
+        requirements = f.read().splitlines()
 
-        install_requires = ['requests>=2.0.0',
-                            'argparse',
-                            'pyzabbix',
-                            'ConfigParser'],
+    setup(
+        name=NAME,
+        version=__version__,
+        author="Tony Rogers",
+        author_email="tony.rogers@rackspace.com",
+        url="https://github.com/teriyakichild/zabbixctl",
+        license='ASLv2',
+        packages=[NAME],
+        package_dir={NAME: NAME},
+        description="zabbixctl - Utility that connects to Zabbix API",
+
+        install_requires=requirements,
+
         entry_points={
-            'console_scripts': [ 'zabbixctl = zabbixctl:main' ],
+            'console_scripts': ['zabbixctl = zabbixctl:main'],
         }
     )
-

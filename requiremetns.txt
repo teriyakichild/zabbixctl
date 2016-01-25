@@ -1,0 +1,4 @@
+requests>=2.0.0
+argparse
+pyzabbix
+ConfigParser

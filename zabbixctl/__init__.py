@@ -43,8 +43,8 @@ def main(args=None):
                     Z[host].auth(args.user, getpass.getpass())
                 else:
                     exit('Error connecting to Zabbix API: {0}'.format(
-                            Z[host].error
-                        )
+                        Z[host].error
+                    )
                     )
 
             func = getattr(
