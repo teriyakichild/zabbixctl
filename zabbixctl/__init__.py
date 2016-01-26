@@ -10,7 +10,8 @@ import logging
 from Zabbix import Zabbix
 from datetime import datetime
 
-
+# todo: lets move main out of __init__ and into it's own file. Keep version
+# and basic stuff in here
 def main(args=None):
     logger = getlogger()
     parser = build_parsers(version=__version__)
