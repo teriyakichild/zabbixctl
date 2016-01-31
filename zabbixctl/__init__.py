@@ -53,7 +53,14 @@ def main(args=None):
 
             func = getattr(
                 getattr(getattr(Z[host], 'zapi'), method_type), method)
+
+            # If the listkeys argument was supplied, we need to override
+            # args.arguments to pull one resource
+            if args.listkeys:
+                args.arguments=['output=extend', 'limit=1']
+
             args_real = parse_args(args.arguments)
+
             if type(args_real) == str or type(args_real) == int:
                 rets[host] = func(str(args_real))
             elif type(args_real) == list:
@@ -96,7 +103,12 @@ def main(args=None):
             for item in final:
                 item[matched_check] = str(
                     datetime.fromtimestamp(float(item[matched_check])))
-        sys.stdout.write(json.dumps(final, indent=2))
+        # if the "listkeys" argument was supplied, we should return the
+        # keys of the first resource in the list.
+        if args.listkeys:
+            sys.stdout.write(json.dumps(final[0].keys(), indent=2))
+        else:
+            sys.stdout.write(json.dumps(final, indent=2))
     else:
         log.info(
             'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(method_type))
