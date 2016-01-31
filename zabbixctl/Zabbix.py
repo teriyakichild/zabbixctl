@@ -9,6 +9,11 @@ cache = Cache('/tmp/zabbix.cache')
 
 log = logging.getLogger(__name__)
 
+class ZabbixNotAuthorized(Exception):
+    pass
+
+class ZabbixError(Exception):
+    pass
 
 class Zabbix(object):
 
@@ -22,12 +27,6 @@ class Zabbix(object):
         :param timeout: API timeout parameter
         :return: Zabbix instance
         """
-
-        # todo: instead of setting object attricutes and checking them later
-        # why not raise exception and catch in code above?
-        self.status = True
-        self.error = None
-
         protocol = 'http' if http is True else 'https'
         zabbix_url = '{0}://{1}/zabbix'.format(protocol, host)
         log.debug("Creating instance of Zabbic with url: %s", zabbix_url)
@@ -52,9 +51,10 @@ class Zabbix(object):
             log.debug('Found token for {0}'.format(host))
             self.zapi.auth = token
             # Let's test the token by grabbing the api version
-            self.fetch_zabbix_api_version()
-        else:
-            self.status = False
+            try:
+                self.fetch_zabbix_api_version()
+            except ZabbixNotAuthorized:
+                self.zapi.auth = ''
 
     def fetch_zabbix_api_version(self):
         """
@@ -64,17 +64,13 @@ class Zabbix(object):
         try:
             return self.zapi.apiinfo.version()
 
-        except ZabbixAPIException as e:
-            log.exception(e)
-            self.status = False
-            self.error = e
+        except (HTTPError, ConnectionError, ZabbixAPIException) as e:
             # todo: cant we check by the error, not its string?
             if 'Not authorized' in str(e):
                 log.debug('Token not authorized for {0}'.format(self.host))
-        except (HTTPError, ConnectionError) as e:
-            log.exception(e)
-            self.error = e
-        return False
+                raise ZabbixNotAuthorized
+            raise ZabbixError(e)
+        raise ZabbixError('Unexpected error occured')
 
     def auth(self, username, password):
         """
@@ -85,37 +81,11 @@ class Zabbix(object):
         """
         try:
             self.zapi.login(username, password)
-            self.error = None
-            self.status = True
             cache.write(self.host, self.zapi.auth)
         except ZabbixAPIException as e:
-            log.exception(e)
-            self.error = e
-            self.status = False
-            return False
+            raise ZabbixNotAuthorized('Username or password invalid')
         return True
 
-    # todo: why is this part of the zabbix object? if it's parsing the command
-    # line arguments it should be par of the command line code
-    def parse_args(self, args):
-        """
-        Takes the given args, parses them and return the arguments object
-        :param args:
-        :return:
-        """
-        arguments = {}
-        if args is not None:
-            for argument in args:
-                if '=' in argument:
-                    tmp = [a for a in argument.split('=', 1)]
-                    try:
-                        value = eval(tmp[1])  # todo: this seems dangerous
-                    except (NameError, SyntaxError):
-                        value = tmp[1]
-                    arguments[tmp[0]] = value
-                else:
-                    arguments = eval(argument)
-        return arguments
 
 if __name__ == '__main__':
     Z_obj = Zabbix('zabbix.yourdomain.net')

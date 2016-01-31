@@ -119,3 +119,23 @@ def build_parsers(version):
                              help='Displays link for Zabbix Wiki')
 
     return parser
+
+def parse_args(args):
+    """
+    Takes the given args, parses them and return the arguments object
+    :param args:
+    :return:
+    """
+    arguments = {}
+    if args is not None:
+        for argument in args:
+            if '=' in argument:
+                tmp = [a for a in argument.split('=', 1)]
+                try:
+                    value = eval(tmp[1])  # todo: this seems dangerous
+                except (NameError, SyntaxError):
+                    value = tmp[1]
+                arguments[tmp[0]] = value
+            else:
+                arguments = eval(argument)
+    return arguments
