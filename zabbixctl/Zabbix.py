@@ -65,14 +65,14 @@ class Zabbix(object):
             return self.zapi.apiinfo.version()
 
         except ZabbixAPIException as e:
-            log.exception()
+            log.exception(e)
             self.status = False
             self.error = e
             # todo: cant we check by the error, not its string?
             if 'Not authorized' in str(e):
                 log.debug('Token not authorized for {0}'.format(self.host))
         except (HTTPError, ConnectionError) as e:
-            log.exception()
+            log.exception(e)
             self.error = e
         return False
 
@@ -89,7 +89,7 @@ class Zabbix(object):
             self.status = True
             cache.write(self.host, self.zapi.auth)
         except ZabbixAPIException as e:
-            log.exception()
+            log.exception(e)
             self.error = e
             self.status = False
             return False
