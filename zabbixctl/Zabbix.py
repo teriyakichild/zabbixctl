@@ -1,21 +1,29 @@
-from pyzabbix import ZabbixAPI, ZabbixAPIException
+"""Contains all the classes and functions associated with the Zabbix object
+type"""
+# Standard Lib
 import getpass
 import logging
 from utils import Cache
-from requests.exceptions import HTTPError, ConnectionError
+from urlparse import urlunparse, urljoin
 
-#todo: don't we want an instance cache not a global one?
-cache = Cache('/tmp/zabbix.cache')
+# Packages
+from pyzabbix import ZabbixAPI, ZabbixAPIException
+from requests.exceptions import HTTPError, ConnectionError
 
 log = logging.getLogger(__name__)
 
-class ZabbixNotAuthorized(Exception):
-    pass
 
 class ZabbixError(Exception):
     pass
 
+
+class ZabbixNotAuthorized(ZabbixError):
+    pass
+
+
 class Zabbix(object):
+
+    API_PATH = 'zabbix'
 
     def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
         """
@@ -27,8 +35,17 @@ class Zabbix(object):
         :param timeout: API timeout parameter
         :return: Zabbix instance
         """
-        protocol = 'http' if http is True else 'https'
-        zabbix_url = '{0}://{1}/zabbix'.format(protocol, host)
+
+        self.cache = Cache('/tmp/zabbix.cache')
+        self.host = host
+
+        zabbix_url = urlunparse([
+            'http' if http else 'https',
+            host.strip('/'),
+            self.API_PATH,
+            '', '', ''
+            ]
+        )
         log.debug("Creating instance of Zabbic with url: %s", zabbix_url)
 
         self.zapi = ZabbixAPI(zabbix_url)
@@ -43,10 +60,9 @@ class Zabbix(object):
             self.zapi.session.verify = False
 
         self.zapi.timeout = timeout
-        self.fetch_zabbix_api_version()
+        self.fetch_zabbix_api_version()  # Check the api
 
-        self.host = host
-        token = cache.get(host)
+        token = self.cache.get(host)
         if token:
             log.debug('Found token for {0}'.format(host))
             self.zapi.auth = token
@@ -70,7 +86,6 @@ class Zabbix(object):
                 log.debug('Token not authorized for {0}'.format(self.host))
                 raise ZabbixNotAuthorized
             raise ZabbixError(e)
-        raise ZabbixError('Unexpected error occured')
 
     def auth(self, username, password):
         """
@@ -81,7 +96,7 @@ class Zabbix(object):
         """
         try:
             self.zapi.login(username, password)
-            cache.write(self.host, self.zapi.auth)
+            self.cache.write(self.host, self.zapi.auth)
         except ZabbixAPIException as e:
             raise ZabbixNotAuthorized('Username or password invalid')
         return True
