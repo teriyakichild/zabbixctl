@@ -5,27 +5,29 @@ __version__ = '1.0.3'
 import json
 import getpass
 import sys
-from utils import Cache, build_parsers, getlogger
+from utils import build_parsers, parse_args
 import logging
-from Zabbix import Zabbix
+from Zabbix import Zabbix, ZabbixNotAuthorized, ZabbixError
 from datetime import datetime
 
+log = logging.getLogger(__name__)
 
+# todo: lets move main out of __init__ and into it's own file. Keep version
+# and basic stuff in here
 def main(args=None):
-    logger = getlogger()
     parser = build_parsers(version=__version__)
 
     if args is None:
         try:
             args = parser.parse_args(sys.argv[1:])
         except IOError as e:
-            logger.error("Could not open file %s: %s" %
+            log.error("Could not open file %s: %s" %
                          (e.filename, e.strerror))
             exit(1)
 
     if args.debug:
-        logger.setLevel(logging.DEBUG)
-        logger.debug("Debug enabled")
+        log.setLevel(logging.DEBUG)
+        log.debug("Debug enabled")
 
     method_type = getattr(args, 'type')
     method = getattr(args, 'subparser_name')
@@ -34,22 +36,31 @@ def main(args=None):
         Z = {}
         rets = {}
         for host in args.hosts:
+            count = 0
             Z[host] = Zabbix(host, args.noverify, args.cacert,
-                             args.http, args.timeout)
-            if not Z[host].status:
-                if Z[host].error is None:
+                                                  args.http, args.timeout)
+            # allow the user to auth 3 times before returning an error
+            while count < 3 and Z[host].zapi.auth == '':
+                try:
                     Z[host].auth(args.user, getpass.getpass())
-                elif 'Not authorized' in Z[host].error:
-                    Z[host].auth(args.user, getpass.getpass())
-                else:
-                    exit('Error connecting to Zabbix API: {0}'.format(
-                        Z[host].error
-                    )
-                    )
+                    # if successful, break out of the loop
+                    break
+                except ZabbixNotAuthorized:
+                    pass
+                count = count + 1
+            if Z[host].zapi.auth == '':
+                raise ZabbixNotAuthorized('Invalid username or password')
 
             func = getattr(
                 getattr(getattr(Z[host], 'zapi'), method_type), method)
-            args_real = Z[host].parse_args(args.arguments)
+
+            # If the listkeys argument was supplied, we need to override
+            # args.arguments to pull one resource
+            if args.listkeys:
+                args.arguments=['output=extend', 'limit=1']
+
+            args_real = parse_args(args.arguments)
+
             if type(args_real) == str or type(args_real) == int:
                 rets[host] = func(str(args_real))
             elif type(args_real) == list:
@@ -92,9 +103,14 @@ def main(args=None):
             for item in final:
                 item[matched_check] = str(
                     datetime.fromtimestamp(float(item[matched_check])))
-        sys.stdout.write(json.dumps(final, indent=2))
+        # if the "listkeys" argument was supplied, we should return the
+        # keys of the first resource in the list.
+        if args.listkeys:
+            sys.stdout.write(json.dumps(final[0].keys(), indent=2))
+        else:
+            sys.stdout.write(json.dumps(final, indent=2))
     else:
-        logger.info(
+        log.info(
             'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(method_type))
 
 if __name__ == '__main__':

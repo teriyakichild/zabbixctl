@@ -1,104 +1,106 @@
-from pyzabbix import ZabbixAPI, ZabbixAPIException
+"""Contains all the classes and functions associated with the Zabbix object
+type"""
+# Standard Lib
 import getpass
 import logging
 from utils import Cache
+from urlparse import urlunparse, urljoin
+
+# Packages
+from pyzabbix import ZabbixAPI, ZabbixAPIException
 from requests.exceptions import HTTPError, ConnectionError
 
-c = Cache('/tmp/zabbix.cache')
+log = logging.getLogger(__name__)
+
+
+class ZabbixError(Exception):
+    pass
+
+
+class ZabbixNotAuthorized(ZabbixError):
+    pass
 
 
 class Zabbix(object):
-    """
 
-    """
-    status = True
-    error = None
+    API_PATH = 'zabbix'
 
     def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
         """
-
-        :param host:
-        :param noverify:
-        :param cacert:
-        :param http:
-        :param timeout:
-        :return:
+        Initializes a Zabbix instance
+        :param host: hostname to connect to (ex. zabbix.yourdomain.net)
+        :param noverify: turns off verification
+        :param cacert: the certificate authority to use
+        :param http: flag to use http over https
+        :param timeout: API timeout parameter
+        :return: Zabbix instance
         """
-        self.logger = logging.getLogger('zabbixctl')
-        self.zabbix_url = host
-        protocol = 'http' if http else 'https'
 
-        self.zabbix_url = '{0}://{1}/zabbix'.format(protocol, host)
+        self.cache = Cache('/tmp/zabbix.cache')
+        self.host = host
 
-        self.logger.debug(self.zabbix_url)
+        zabbix_url = urlunparse([
+            'http' if http else 'https',
+            host.strip('/'),
+            self.API_PATH,
+            '', '', ''
+            ]
+        )
+        log.debug("Creating instance of Zabbic with url: %s", zabbix_url)
 
-        self.zapi = ZabbixAPI(self.zabbix_url)
+        self.zapi = ZabbixAPI(zabbix_url)
 
         if cacert is not None:
-            self.logger.debug(
-                'Setting zapi.session.verify to {0}'.format(cacert))
+            log.debug('Setting zapi.session.verify to {0}'
+                      ''.format(cacert))
             self.zapi.session.verify = cacert
 
         if noverify:
-            self.logger.debug('Setting zapi.session.verify to False')
+            log.debug('Setting zapi.session.verify to False')
             self.zapi.session.verify = False
 
         self.zapi.timeout = timeout
-        self.fetch_zabbix_api_version()
+        self.fetch_zabbix_api_version()  # Check the api
 
-        self.host = host
-        token = c.get(host)
+        token = self.cache.get(host)
         if token:
-            self.logger.debug('Found token for {0}'.format(host))
+            log.debug('Found token for {0}'.format(host))
             self.zapi.auth = token
             # Let's test the token by grabbing the api version
-            self.fetch_zabbix_api_version()
-        else:
-            self.status = False
+            try:
+                self.fetch_zabbix_api_version()
+            except ZabbixNotAuthorized:
+                self.zapi.auth = ''
 
     def fetch_zabbix_api_version(self):
+        """
+        reaches out to the zapi api info to parse the string
+        :return: Version string or False
+        """
         try:
             return self.zapi.apiinfo.version()
-        except ZabbixAPIException as e:
-            self.status = False
-            if 'Not authorized' in str(e):
-                self.logger.debug('Token not authorized for {0}'.format(host))
-                self.error = e
-            else:
-                self.error = e
-        except (HTTPError, ConnectionError) as e:
-            self.error = e
-        return False
 
-    def status(self):
-        return self.status
+        except (HTTPError, ConnectionError, ZabbixAPIException) as e:
+            # todo: cant we check by the error, not its string?
+            if 'Not authorized' in str(e):
+                log.debug('Token not authorized for {0}'.format(self.host))
+                raise ZabbixNotAuthorized
+            raise ZabbixError(e)
 
     def auth(self, username, password):
+        """
+        Performs the loggin function of the api with the supplied credentials
+        :param username: username
+        :param password: password
+        :return: True is valid, False otherwise
+        """
         try:
             self.zapi.login(username, password)
-            self.error = None
-            self.status = True
-            c.write(self.host, self.zapi.auth)
+            self.cache.write(self.host, self.zapi.auth)
         except ZabbixAPIException as e:
-            self.error = e
-            self.status = False
-            return False
+            raise ZabbixNotAuthorized('Username or password invalid')
         return True
 
-    def parse_args(self, args):
-        arguments = {}
-        if args is not None:
-            for argument in args:
-                if '=' in argument:
-                    tmp = [a for a in argument.split('=', 1)]
-                    try:
-                        value = eval(tmp[1])
-                    except (NameError, SyntaxError):
-                        value = tmp[1]
-                    arguments[tmp[0]] = value
-                else:
-                    arguments = eval(argument)
-        return arguments
 
 if __name__ == '__main__':
     Z_obj = Zabbix('zabbix.yourdomain.net')
