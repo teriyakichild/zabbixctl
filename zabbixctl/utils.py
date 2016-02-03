@@ -10,20 +10,24 @@ class Cache:
     def __init__(self, cachefile):
         self.cachefile = cachefile
 
-    def get(self, host):
+    def get(self, slug):
+        """
+        Get token from cache
+        :param slug: unique key to store in cache.  Should be 'host-user'.
+        """
         try:
             token_data = json.load(open(self.cachefile, 'rb'))
-            token = token_data.get(host, None)
+            token = token_data.get(slug, None)
         except IOError:
             token = None
         return token
 
-    def write(self, host, token):
+    def write(self, slug, token):
         try:
             token_data = json.load(open(self.cachefile, 'rb'))
         except IOError:
             token_data = {}
-        token_data[host] = token
+        token_data[slug] = token
         json.dump(token_data, open(self.cachefile, 'wb'))
 
 
