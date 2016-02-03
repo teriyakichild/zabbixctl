@@ -22,14 +22,12 @@ class ZabbixNotAuthorized(ZabbixError):
 
 
 class Zabbix(object):
-
-    API_PATH = 'zabbix'
-
-    def __init__(self, host, user, noverify=False, cacert=None, http=False, timeout=30):
+    def __init__(self, host, uri_path, user, noverify=False, cacert=None, http=False, timeout=30):
         """
         Initializes a Zabbix instance
         :param host: hostname to connect to (ex. zabbix.yourdomain.net)
         :param user: username to connect with (ex. Admin)
+        :param uri_path: uri path to zabbix api (ex. zabbix)
         :param noverify: turns off verification
         :param cacert: the certificate authority to use
         :param http: flag to use http over https
@@ -44,7 +42,7 @@ class Zabbix(object):
         zabbix_url = urlunparse([
             'http' if http else 'https',
             host.strip('/'),
-            self.API_PATH,
+            uri_path,
             '', '', ''
         ]
         )

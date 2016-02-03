@@ -39,7 +39,7 @@ def main(args=None):
         rets = {}
         for host in args.hosts:
             count = 0
-            Z[host] = Zabbix(host, args.user, args.noverify, args.cacert,
+            Z[host] = Zabbix(host, args.uri_path, args.user, args.noverify, args.cacert,
                              args.http, args.timeout)
             # allow the user to auth 3 times before returning an error
             while count < 3 and Z[host].zapi.auth == '':

@@ -66,6 +66,10 @@ def build_parsers(version):
                         dest='hosts',
                         help='Zabbix API host(s).'
                         'example: zabbixhost.example.com', action='append')
+    parser.add_argument('-p', '--uri-path',
+                        dest='uri_path',
+                        default='zabbix',
+                        help='URI path to zabbix api. default: zabbix')
     parser.add_argument('-U', '--user',
                         default=getpass.getuser(),
                         help='Zabbix API user')

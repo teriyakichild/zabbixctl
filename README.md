@@ -39,6 +39,9 @@ optional arguments:
   -H HOSTS, --hosts HOSTS
                         Zabbix API host(s).example: zabbixhost.example.com
                         (default: None)
+  -p URI_PATH, --uri-path URI_PATH
+                        URI path to zabbix api. default: zabbix (default:
+                        zabbix)
   -U USER, --user USER  Zabbix API user (default: system username)
 
 usage: zabbixctl get [-h] [-a ARGUMENTS] type
@@ -51,6 +54,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -a ARGUMENTS, --arguments ARGUMENTS
                         RPC params
+  -k, --listkeys        Returns a list of keys for the given resource type
 ```
 
 ## Examples
