@@ -81,10 +81,10 @@ def build_parsers(version):
                             default=['output=extend', ],
                             help='RPC params', action='append')
     get_parser.add_argument('-k', '--listkeys',
-                        dest='listkeys',
-                        default=False,
-                        help='Returns a list of keys for the '
-                        'given resource type', action='store_true')
+                            dest='listkeys',
+                            default=False,
+                            help='Returns a list of keys for the '
+                            'given resource type', action='store_true')
 
     export_parser = subparsers.add_parser(
         'export', help='Zabbix API Method for export')
@@ -128,6 +128,7 @@ def build_parsers(version):
                              help='Displays link for Zabbix Wiki')
 
     return parser
+
 
 def parse_args(args):
     """

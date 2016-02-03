@@ -46,7 +46,7 @@ class Zabbix(object):
             host.strip('/'),
             self.API_PATH,
             '', '', ''
-            ]
+        ]
         )
         log.debug("Creating instance of Zabbic with url: %s", zabbix_url)
 

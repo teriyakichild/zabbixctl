@@ -14,6 +14,8 @@ log = logging.getLogger(__name__)
 
 # todo: lets move main out of __init__ and into it's own file. Keep version
 # and basic stuff in here
+
+
 def main(args=None):
     parser = build_parsers(version=__version__)
 
@@ -22,7 +24,7 @@ def main(args=None):
             args = parser.parse_args(sys.argv[1:])
         except IOError as e:
             log.error("Could not open file %s: %s" %
-                         (e.filename, e.strerror))
+                      (e.filename, e.strerror))
             exit(1)
 
     if args.debug:
@@ -38,7 +40,7 @@ def main(args=None):
         for host in args.hosts:
             count = 0
             Z[host] = Zabbix(host, args.user, args.noverify, args.cacert,
-                                                  args.http, args.timeout)
+                             args.http, args.timeout)
             # allow the user to auth 3 times before returning an error
             while count < 3 and Z[host].zapi.auth == '':
                 try:
@@ -57,7 +59,7 @@ def main(args=None):
             # If the listkeys argument was supplied, we need to override
             # args.arguments to pull one resource
             if args.listkeys:
-                args.arguments=['output=extend', 'limit=1']
+                args.arguments = ['output=extend', 'limit=1']
 
             args_real = parse_args(args.arguments)
 
