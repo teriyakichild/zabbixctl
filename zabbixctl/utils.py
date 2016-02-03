@@ -31,14 +31,6 @@ class Cache:
         json.dump(token_data, open(self.cachefile, 'wb'))
 
 
-def getlogger():
-    log = logging.getLogger('zabbixctl')
-    log.addHandler(logging.StreamHandler(sys.stdout))
-    log.setLevel(logging.INFO)
-    logging.captureWarnings(True)
-    return log
-
-
 def build_parsers(version):
     """Build parsers for cli"""
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,

@@ -11,6 +11,12 @@ from Zabbix import Zabbix, ZabbixNotAuthorized, ZabbixError
 from datetime import datetime
 
 log = logging.getLogger(__name__)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(formatter)
+log.addHandler(handler)
+log.setLevel(logging.INFO)
+logging.captureWarnings(True)
 
 # todo: lets move main out of __init__ and into it's own file. Keep version
 # and basic stuff in here
@@ -51,7 +57,7 @@ def main(args=None):
                     pass
                 count = count + 1
             if Z[host].zapi.auth == '':
-                raise ZabbixNotAuthorized('Invalid username or password')
+                log.exception(ZabbixNotAuthorized('Invalid username or password'))
 
             func = getattr(
                 getattr(getattr(Z[host], 'zapi'), method_type), method)
