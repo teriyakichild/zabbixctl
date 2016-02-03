@@ -1,13 +1,15 @@
+from datetime import datetime
+import getpass
 import json
 import logging
 import sys
-import getpass
 
+
+from Zabbix import Zabbix, ZabbixNotAuthorized
 from utils import build_parsers, parse_args
-from Zabbix import Zabbix, ZabbixNotAuthorized, ZabbixError
+from zabbixctl import __version__ as version
 
-
-log = logging.getLogger('zabbixctl')
+log = logging.getLogger(__name__)
 
 
 class ZabbixCLI(object):
@@ -17,6 +19,7 @@ class ZabbixCLI(object):
     HOSTS = None
 
     def __init__(self, version):
+        self._args = None
         self._parser = build_parsers(version=version)
         self.JOBS = {}
         self.HOSTS = {}
@@ -71,7 +74,7 @@ class ZabbixCLI(object):
                     break
                 except ZabbixNotAuthorized:
                     pass
-                count = count + 1
+                count += 1
             if zbx.zapi.auth == '':
                 log.exception(ZabbixNotAuthorized(
                     'Invalid username or password for {0}'.format(host)))
@@ -115,7 +118,8 @@ class ZabbixCLI(object):
                 final = sorted(final, key=lambda k: k[matched_key])
                 for item in final:
                     item[matched_key] = str(
-                        datetime.fromtimestamp(float(item[matched_key])))
+                        datetime.fromtimestamp(float(item[matched_key]))
+                    )
             # if the "listkeys" argument was supplied, we should return the
             # keys of the first resource in the list.
             if self._args.listkeys:
@@ -124,4 +128,21 @@ class ZabbixCLI(object):
                 sys.stdout.write(json.dumps(final, indent=2))
         else:
             log.info(
-                'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(self.METHOD_TYPE))
+                'https://www.zabbix.com/documentation/2.2/manual/api/reference/{0}'.format(self.METHOD_TYPE)
+            )
+
+
+def main(args=None):
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+    logging.captureWarnings(True)
+
+    cli = ZabbixCLI(version=version)
+    cli.load(sys.argv[1:])
+    cli.auth()
+    cli.execute()
