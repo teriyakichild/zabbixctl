@@ -26,6 +26,6 @@ if __name__ == "__main__":
         install_requires=requirements,
 
         entry_points={
-            'console_scripts': ['zabbixctl = zabbixctl:main'],
+            'console_scripts': ['zabbixctl = zabbixctl.cli:main'],
         }
     )
