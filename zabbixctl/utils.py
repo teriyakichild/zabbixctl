@@ -56,6 +56,7 @@ def build_parsers(version):
                         help='Zabbix API read timeout in seconds')
     parser.add_argument('-H', '--hosts',
                         dest='hosts',
+                        required=True,
                         help='Zabbix API host(s).'
                         'example: zabbixhost.example.com', action='append')
     parser.add_argument('-p', '--uri-path',
