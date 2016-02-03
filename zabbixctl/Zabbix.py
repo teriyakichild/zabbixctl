@@ -22,6 +22,7 @@ class ZabbixNotAuthorized(ZabbixError):
 
 
 class Zabbix(object):
+
     def __init__(self, host, uri_path, user, noverify=False, cacert=None, http=False, timeout=30):
         """
         Initializes a Zabbix instance
