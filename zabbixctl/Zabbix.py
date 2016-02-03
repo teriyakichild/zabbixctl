@@ -25,10 +25,11 @@ class Zabbix(object):
 
     API_PATH = 'zabbix'
 
-    def __init__(self, host, noverify=False, cacert=None, http=False, timeout=30):
+    def __init__(self, host, user, noverify=False, cacert=None, http=False, timeout=30):
         """
         Initializes a Zabbix instance
         :param host: hostname to connect to (ex. zabbix.yourdomain.net)
+        :param user: username to connect with (ex. Admin)
         :param noverify: turns off verification
         :param cacert: the certificate authority to use
         :param http: flag to use http over https
@@ -38,13 +39,14 @@ class Zabbix(object):
 
         self.cache = Cache('/tmp/zabbix.cache')
         self.host = host
+        self.cache_slug = '{0}-{1}'.format(host, user)
 
         zabbix_url = urlunparse([
             'http' if http else 'https',
             host.strip('/'),
             self.API_PATH,
             '', '', ''
-            ]
+        ]
         )
         log.debug("Creating instance of Zabbic with url: %s", zabbix_url)
 
@@ -62,7 +64,7 @@ class Zabbix(object):
         self.zapi.timeout = timeout
         self.fetch_zabbix_api_version()  # Check the api
 
-        token = self.cache.get(host)
+        token = self.cache.get(self.cache_slug)
         if token:
             log.debug('Found token for {0}'.format(host))
             self.zapi.auth = token
@@ -96,7 +98,7 @@ class Zabbix(object):
         """
         try:
             self.zapi.login(username, password)
-            self.cache.write(self.host, self.zapi.auth)
+            self.cache.write(self.cache_slug, self.zapi.auth)
         except ZabbixAPIException as e:
             raise ZabbixNotAuthorized('Username or password invalid')
         return True
