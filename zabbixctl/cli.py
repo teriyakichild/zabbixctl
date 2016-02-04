@@ -57,7 +57,7 @@ class ZabbixCLI(object):
 
                 # If the listkeys argument was supplied, we need to override
                 # args.arguments to pull one resource
-                if self._args.listkeys:
+                if getattr(self._args, 'listkeys', False):
                     self._args.arguments = ['output=extend', 'limit=1']
                 # convert the arguments into the required format for the zapi
                 # object.
