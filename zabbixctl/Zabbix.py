@@ -67,11 +67,12 @@ class Zabbix(object):
         if token:
             log.debug('Found token for {0}'.format(host))
             self.zapi.auth = token
-            # Let's test the token by grabbing the api version
+            # Let's test the token
             try:
-                self.fetch_zabbix_api_version()
+                self.verify_token()
             except ZabbixNotAuthorized:
                 self.zapi.auth = ''
+                self.cache.delete(self.cache_slug)
 
     def fetch_zabbix_api_version(self):
         """
@@ -80,10 +81,21 @@ class Zabbix(object):
         """
         try:
             return self.zapi.apiinfo.version()
+        except (HTTPError, ConnectionError, ZabbixAPIException) as e:
+            raise ZabbixError(e)
 
+    def verify_token(self):
+        """
+        Runs the zapi.host.get(limit=1) call to test the current token
+        :return: Nothing
+        """
+        try:
+            self.zapi.host.get(limit=1)
         except (HTTPError, ConnectionError, ZabbixAPIException) as e:
             # todo: cant we check by the error, not its string?
-            if 'Not authorized' in str(e):
+            if any(['Not authorised' in str(e),
+                    'Not authorized' in str(e),
+                    'Session terminated,' in str(e)]):
                 log.debug('Token not authorized for {0}'.format(self.host))
                 raise ZabbixNotAuthorized
             raise ZabbixError(e)

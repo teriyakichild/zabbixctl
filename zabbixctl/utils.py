@@ -10,25 +10,32 @@ class Cache:
     def __init__(self, cachefile):
         self.cachefile = cachefile
 
+    def __get_token_data(self):
+        try:
+            token_data = json.load(open(self.cachefile, 'rb'))
+        except IOError:
+            token_data = {}
+        return token_data
+
+    def __write_token_data(self, data):
+        json.dump(data, open(self.cachefile, 'wb'))
+
     def get(self, slug):
         """
         Get token from cache
         :param slug: unique key to store in cache.  Should be 'host-user'.
         """
-        try:
-            token_data = json.load(open(self.cachefile, 'rb'))
-            token = token_data.get(slug, None)
-        except IOError:
-            token = None
-        return token
+        return self.__get_token_data().get(slug, None)
 
     def write(self, slug, token):
-        try:
-            token_data = json.load(open(self.cachefile, 'rb'))
-        except IOError:
-            token_data = {}
+        token_data = self.__get_token_data()
         token_data[slug] = token
-        json.dump(token_data, open(self.cachefile, 'wb'))
+        self.__write_token_data(token_data)
+
+    def delete(self, slug):
+        token_data = self.__get_token_data()
+        token_data.pop(slug, None)
+        self.__write_token_data(token_data)
 
 
 def build_parsers(version):
