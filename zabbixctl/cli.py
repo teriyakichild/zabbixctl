@@ -118,6 +118,9 @@ class ZabbixCLI(object):
                     try:
                         if final[0].get(key, None):
                             matched_key = key
+                    except KeyError:
+                        if final.itervalues().next().get(key, None):
+                            matched_key = key
                     except IndexError:
                         pass
                 # If a key exists, then sort on that key and update the unix_timestamp
