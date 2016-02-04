@@ -55,6 +55,12 @@ optional arguments:
   -a ARGUMENTS, --arguments ARGUMENTS
                         RPC params
   -k, --listkeys        Returns a list of keys for the given resource type
+  -f FILTER, --filter FILTER
+                        Takes "key=value" args that are sent to the zabbix api
+                        in the filter parameter
+  -s SEARCH, --search SEARCH
+                        Takes "key=value" args that are sent to the zabbix api
+                        in the search parameter
 ```
 
 ## Examples

@@ -82,6 +82,14 @@ def build_parsers(version):
                             default=False,
                             help='Returns a list of keys for the '
                             'given resource type', action='store_true')
+    get_parser.add_argument('-f', '--filter',
+                            dest='filter',
+                            help='Takes "key=value" args that are sent to the'
+                            ' zabbix api in the filter parameter', action='append')
+    get_parser.add_argument('-s', '--search',
+                            dest='search',
+                            help='Takes "key=value" args that are sent to the'
+                            ' zabbix api in the search parameter', action='append')
 
     export_parser = subparsers.add_parser(
         'export', help='Zabbix API Method for export')

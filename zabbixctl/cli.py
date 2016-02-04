@@ -62,6 +62,13 @@ class ZabbixCLI(object):
                 # convert the arguments into the required format for the zapi
                 # object.
                 args_real = parse_args(self._args.arguments)
+
+                # Parse specific cli arguments and update args_real
+                args_to_parse = ['search', 'filter']
+                for key in args_to_parse:
+                    if getattr(self._args, key, None) is not None:
+                        args_real[key] = parse_args(getattr(self._args, key))
+
                 self.JOBS[host] = (zapi_function, args_real)
 
     def auth(self):
