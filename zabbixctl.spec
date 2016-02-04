@@ -3,7 +3,7 @@
 %define module_name zabbixctl
 
 Name:           %{module_name}
-Version:        1.1.2
+Version:        1.1.3
 Release:        1
 Summary:        zabbixctl - Utility that connects to Zabbix API
 
