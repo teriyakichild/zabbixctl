@@ -80,49 +80,50 @@ class ZabbixCLI(object):
                     'Invalid username or password for {0}'.format(host)))
 
     def execute(self):
-        final = []
-        for job, data in self.JOBS.items():
-            zapi_function = data[0]
-            arguments = data[1]
-            if type(arguments) == str or type(arguments) == int:
-                ret = zapi_function(str(arguments))
-            elif type(arguments) == list:
-                ret = zapi_function(*arguments)
-            else:
-                ret = zapi_function(**arguments)
+        if self.METHOD not in ['help']:
+            final = []
+            for job, data in self.JOBS.items():
+                zapi_function = data[0]
+                arguments = data[1]
+                if type(arguments) == str or type(arguments) == int:
+                    ret = zapi_function(str(arguments))
+                elif type(arguments) == list:
+                    ret = zapi_function(*arguments)
+                else:
+                    ret = zapi_function(**arguments)
 
-            if type(ret) == list:
-                final += ret
-            elif type(ret) == dict:
-                final = ret
-            else:
-                final = eval(ret)
+                if type(ret) == list:
+                    final += ret
+                elif type(ret) == dict:
+                    final = ret
+                else:
+                    final = eval(ret)
 
-        # if method type is alert, sort based on 'clock' key
-        if any(self.METHOD_TYPE in s for s in ['alert']):
-            final = sorted(final, key=lambda k: k['clock'])
+            # if method type is alert, sort based on 'clock' key
+            if any(self.METHOD_TYPE in s for s in ['alert']):
+                final = sorted(final, key=lambda k: k['clock'])
 
-        if self.METHOD not in ['create', 'delete', 'update', 'export']:
-            # Check if one of the following keys exist
-            list_of_keys = ['clock', 'lastchange']
-            matched_key = None
-            for key in list_of_keys:
-                try:
-                    if final[0].get(key, None):
-                        matched_key = key
-                except IndexError:
-                    pass
-            # If a key exists, then sort on that key and update the unix_timestamp
-            # to readable format
-            if matched_key:
-                final = sorted(final, key=lambda k: k[matched_key])
-                for item in final:
-                    item[matched_key] = str(
-                        datetime.fromtimestamp(float(item[matched_key]))
-                    )
+            if self.METHOD not in ['create', 'delete', 'update', 'export']:
+                # Check if one of the following keys exist
+                list_of_keys = ['clock', 'lastchange']
+                matched_key = None
+                for key in list_of_keys:
+                    try:
+                        if final[0].get(key, None):
+                            matched_key = key
+                    except IndexError:
+                        pass
+                # If a key exists, then sort on that key and update the unix_timestamp
+                # to readable format
+                if matched_key:
+                    final = sorted(final, key=lambda k: k[matched_key])
+                    for item in final:
+                        item[matched_key] = str(
+                            datetime.fromtimestamp(float(item[matched_key]))
+                        )
             # if the "listkeys" argument was supplied, we should return the
             # keys of the first resource in the list.
-            if self._args.listkeys:
+            if getattr(self._args, 'listkeys', False):
                 sys.stdout.write(json.dumps(final[0].keys(), indent=2))
             else:
                 sys.stdout.write(json.dumps(final, indent=2))
@@ -133,11 +134,7 @@ class ZabbixCLI(object):
 
 
 def main(args=None):
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(formatter)
     log.addHandler(handler)
     log.setLevel(logging.INFO)
     logging.captureWarnings(True)
