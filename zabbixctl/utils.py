@@ -13,7 +13,7 @@ class Cache:
     def __get_token_data(self):
         try:
             token_data = json.load(open(self.cachefile, 'rb'))
-        except IOError:
+        except (IOError, ValueError):
             token_data = {}
         return token_data
 
