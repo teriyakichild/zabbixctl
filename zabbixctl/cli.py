@@ -121,7 +121,7 @@ class ZabbixCLI(object):
                     except KeyError:
                         if final.itervalues().next().get(key, None):
                             matched_key = key
-                    except IndexError:
+                    except (IndexError, TypeError):
                         pass
                 # If a key exists, then sort on that key and update the unix_timestamp
                 # to readable format
